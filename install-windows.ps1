@@ -40,7 +40,7 @@ Write-Host "[*] Refreshing season data from live climate feed (skips if offline)
 python -m app.refresh
 
 # 6. Launch
-Write-Host "`n[OK] Starting PlanMyTrip at http://localhost:8000/docs" -ForegroundColor Green
+Write-Host "`n[OK] Starting PlanMyTrip at http://localhost:8000/  (API docs at /docs)" -ForegroundColor Green
 Write-Host "     (Press Ctrl+C to stop.)`n"
-Start-Process "http://localhost:8000/docs"
+Start-Process "http://localhost:8000/"
 uvicorn app.main:app --host 127.0.0.1 --port 8000

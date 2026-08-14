@@ -1,0 +1,649 @@
+<title>PlanMyTrip</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ground:#e9ebf0; --paper:#f6f7fa; --surface:#ffffff; --surface-2:#f0f2f6;
+    --ink:#151a26; --ink-soft:#4a5364; --ink-faint:#7b8496;
+    --line:#dde1e9;
+    --accent:#0d7c66; --accent-ink:#0a5c4c; --accent-wash:#e2f1ec;
+    --gold:#c98a1e; --gold-wash:#f6ecd6;
+    --indigo:#232c54; --indigo-ink:#f3f4fb;
+    --rank:#0d7c66;
+    --shadow:0 1px 2px rgba(20,26,38,.06),0 8px 24px rgba(20,26,38,.08);
+    --shadow-lg:0 20px 60px rgba(20,26,38,.28);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme:dark){
+      --ground:#080b14; --paper:#0e1220; --surface:#161c2e; --surface-2:#1d2437;
+      --ink:#eaecf3; --ink-soft:#a7aec0; --ink-faint:#6f7893;
+      --line:#28304a;
+      --accent:#31b89b; --accent-ink:#8fe6d3; --accent-wash:#123a33;
+      --gold:#e7b552; --gold-wash:#3a2f16;
+      --indigo:#1a2140; --indigo-ink:#eef0fb;
+      --rank:#31b89b;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.5);
+      --shadow-lg:0 24px 70px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#080b14; --paper:#0e1220; --surface:#161c2e; --surface-2:#1d2437;
+    --ink:#eaecf3; --ink-soft:#a7aec0; --ink-faint:#6f7893;
+    --line:#28304a;
+    --accent:#31b89b; --accent-ink:#8fe6d3; --accent-wash:#123a33;
+    --gold:#e7b552; --gold-wash:#3a2f16;
+    --indigo:#1a2140; --indigo-ink:#eef0fb;
+    --rank:#31b89b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.5);
+    --shadow-lg:0 24px 70px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  .wrap{
+    max-width:1140px;margin:0 auto;padding:40px 24px 64px;
+    display:grid;grid-template-columns:1fr;gap:40px;
+  }
+  @media(min-width:920px){
+    .wrap{grid-template-columns:minmax(0,1fr) 430px;align-items:start;gap:56px;padding-top:64px}
+    .rail{position:sticky;top:64px}
+  }
+
+  .brandline{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .mark{width:34px;height:34px;border-radius:10px;background:var(--accent);
+    display:grid;place-items:center;color:#fff;font-weight:700;font-size:18px;box-shadow:var(--shadow)}
+  .brandline b{font-size:19px;letter-spacing:-.01em}
+  .brandline span{color:var(--ink-faint);font-size:13px}
+  .rail h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,4.6vw,46px);
+    line-height:1.06;letter-spacing:-.02em;margin:0 0 16px;text-wrap:balance}
+  .rail h1 em{font-style:italic;color:var(--accent)}
+  .lede{font-size:16px;color:var(--ink-soft);max-width:46ch;margin:0 0 24px}
+  .srcbadge{display:inline-flex;gap:7px;align-items:center;font-size:12.5px;font-weight:600;
+    padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);margin-bottom:26px}
+  .srcbadge .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-faint)}
+  .srcbadge.live .dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)}
+  .srcbadge.live{color:var(--accent-ink);border-color:var(--accent)}
+  .gap{display:grid;gap:12px;margin:0 0 30px}
+  .gap-row{display:flex;gap:13px;align-items:flex-start;padding:13px 15px;
+    background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}
+  .gap-row .k{font-size:19px;line-height:1.2;filter:grayscale(.15)}
+  .gap-row .t b{display:block;font-size:14px;letter-spacing:-.01em}
+  .gap-row .t span{font-size:13px;color:var(--ink-faint)}
+  .foot{font-size:12.5px;color:var(--ink-faint);border-top:1px solid var(--line);padding-top:18px;max-width:44ch}
+  .themebtn{margin-top:18px;font:inherit;font-size:13px;color:var(--ink-soft);
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:7px 15px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+  .themebtn:hover{border-color:var(--accent);color:var(--accent)}
+
+  .stage{display:flex;justify-content:center}
+  .phone{width:400px;max-width:100%;height:812px;background:var(--paper);
+    border-radius:44px;box-shadow:var(--shadow-lg);border:1px solid var(--line);
+    padding:11px;position:relative;overflow:hidden}
+  @media(max-width:440px){.phone{height:760px;border-radius:34px}}
+  .glass{position:absolute;inset:11px;border-radius:34px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:128px;height:26px;background:var(--paper);border-radius:0 0 16px 16px;z-index:6}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;
+    padding:11px 24px 4px;font-size:12.5px;font-weight:600;color:var(--ink);z-index:5}
+  .statusbar .dots{display:flex;gap:5px;align-items:center}
+
+  .screenport{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+  .screenport::-webkit-scrollbar{display:none}
+  .screen{display:none;padding:6px 18px 26px;animation:fade .35s ease}
+  .screen.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .apphead{padding:6px 2px 14px}
+  .apphead .ey{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .apphead h2{font-family:var(--serif);font-weight:600;font-size:27px;letter-spacing:-.02em;margin:3px 0 0;line-height:1.1}
+  .apphead p{margin:5px 0 0;font-size:13.5px;color:var(--ink-faint)}
+
+  .qlabel{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;margin:16px 2px 9px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:999px;
+    border:1.4px solid var(--line);background:var(--surface);color:var(--ink-soft);
+    cursor:pointer;display:inline-flex;gap:6px;align-items:center;transition:.16s}
+  .chip .e{font-size:14px}
+  .chip:hover{border-color:var(--accent)}
+  .chip.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.sel .e{filter:brightness(3)}
+
+  .controls{display:flex;gap:10px;margin:16px 0 4px}
+  .ctrl{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:11px 13px;box-shadow:var(--shadow)}
+  .ctrl .l{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:700}
+  .ctrl .v{font-size:15px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .ctrl input[type=range]{width:100%;margin-top:8px;accent-color:var(--accent)}
+
+  .reslabel{display:flex;justify-content:space-between;align-items:baseline;margin:24px 2px 12px}
+  .reslabel b{font-size:15px}
+  .reslabel span{font-size:12.5px;color:var(--ink-faint)}
+  .loading{padding:30px 4px;text-align:center;color:var(--ink-faint);font-size:13px}
+
+  .dcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px;transition:.18s}
+  .dcard:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .dhero{height:118px;position:relative;display:flex;align-items:flex-end;padding:12px 14px}
+  .dhero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.5))}
+  .dhero .badge{position:absolute;top:11px;right:11px;z-index:2;background:rgba(0,0,0,.42);
+    color:#fff;font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;
+    backdrop-filter:blur(3px);display:flex;gap:5px;align-items:center}
+  .dhero .fit{position:absolute;top:11px;left:11px;z-index:2;width:42px;height:42px;border-radius:50%;
+    background:rgba(255,255,255,.92);display:grid;place-items:center;text-align:center;line-height:1}
+  .dhero .fit b{font-size:15px;color:var(--accent-ink);font-variant-numeric:tabular-nums}
+  .dhero .fit i{font-size:8px;letter-spacing:.06em;color:#5a6472;font-style:normal;font-weight:700}
+  .dhero h3{position:relative;z-index:2;font-family:var(--serif);color:#fff;margin:0;
+    font-size:23px;font-weight:600;letter-spacing:-.01em;text-shadow:0 1px 12px rgba(0,0,0,.5)}
+  .dhero .sub{position:relative;z-index:2;color:rgba(255,255,255,.9);font-size:12px;margin-left:8px}
+  .dbody{padding:12px 14px 14px}
+  .taglist{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
+  .tg{font-size:11px;font-weight:600;color:var(--accent-ink);background:var(--accent-wash);padding:3px 8px;border-radius:6px}
+  .dmeta{display:flex;gap:14px;font-size:12.5px;color:var(--ink-soft)}
+  .dmeta .mv{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .why{font-size:11.5px;color:var(--ink-soft);margin-top:10px;font-style:italic}
+  .season-strip{display:flex;gap:3px;margin-top:12px}
+  .season-strip i{flex:1;height:6px;border-radius:2px;background:var(--surface-2)}
+  .season-strip i.good{background:var(--accent)}
+  .season-strip i.ok{background:var(--gold)}
+  .season-strip i.now{outline:2px solid var(--ink);outline-offset:1px}
+  .season-key{display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink-faint);margin-top:4px;letter-spacing:.03em}
+
+  .block{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;box-shadow:var(--shadow);margin-bottom:14px}
+  .block > .bh{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .block > .bh .e{font-size:17px}
+  .block > .bh b{font-size:15px;letter-spacing:-.01em}
+  .block > .bh .tag{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--gold);background:var(--gold-wash);padding:3px 8px;border-radius:6px}
+  .block p.d{font-size:13px;color:var(--ink-soft);margin:6px 0 0}
+
+  .daytabs{display:flex;gap:7px;margin:4px 0 16px;overflow-x:auto;scrollbar-width:none}
+  .daytabs::-webkit-scrollbar{display:none}
+  .daytab{flex:0 0 auto;font:inherit;font-size:12.5px;font-weight:700;padding:9px 13px;border-radius:11px;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);cursor:pointer;text-align:center;line-height:1.2}
+  .daytab small{display:block;font-size:10px;font-weight:600;color:var(--ink-faint);margin-top:2px}
+  .daytab.sel{background:var(--indigo);border-color:var(--indigo);color:var(--indigo-ink)}
+  .daytab.sel small{color:rgba(243,244,251,.7)}
+  .dayview{display:none}.dayview.on{display:block}
+
+  .tl{position:relative;padding-left:26px}
+  .tl::before{content:"";position:absolute;left:8px;top:6px;bottom:10px;width:2px;background:var(--line)}
+  .ev{position:relative;margin-bottom:13px}
+  .ev::before{content:"";position:absolute;left:-22px;top:5px;width:11px;height:11px;border-radius:50%;
+    background:var(--surface);border:2.5px solid var(--accent)}
+  .ev.rest::before{border-color:var(--gold)}
+  .ev.move::before{border-color:var(--ink-faint);background:var(--ink-faint)}
+  .ev .time{font-size:11px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em}
+  .ev .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:4px;box-shadow:var(--shadow)}
+  .ev .card b{font-size:14px}
+  .ev .card p{margin:3px 0 0;font-size:12px;color:var(--ink-soft)}
+  .ev .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;margin-top:7px}
+  .pill.well{color:var(--accent-ink);background:var(--accent-wash)}
+  .pill.shop{color:var(--gold);background:var(--gold-wash)}
+  .ev.move .mv{font-size:12px;color:var(--ink-faint);padding:2px 0}
+
+  .wcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px}
+  .wcard .top{height:96px;position:relative;display:flex;align-items:flex-end;padding:11px 13px}
+  .wcard .top::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.45))}
+  .wcard .top h3{position:relative;z-index:2;color:#fff;margin:0;font-family:var(--serif);font-size:19px;font-weight:600;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+  .wcard .top .loc{position:relative;z-index:2;color:rgba(255,255,255,.85);font-size:11.5px;margin-left:7px}
+  .wcard .wb{padding:12px 13px 13px}
+  .creds{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .cred{font-size:10.5px;font-weight:700;padding:4px 8px;border-radius:6px;border:1px solid var(--line);
+    color:var(--ink-soft);display:inline-flex;gap:4px;align-items:center}
+  .cred.verify{color:var(--accent-ink);background:var(--accent-wash);border-color:transparent}
+  .wcard .wb .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-soft)}
+  .wcard .wb .row b{font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .costtable{display:flex;flex-direction:column;gap:1px;background:var(--line);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  .costrow{display:flex;justify-content:space-between;align-items:center;background:var(--surface);padding:11px 13px;font-size:13px}
+  .costrow .lft{display:flex;gap:9px;align-items:center;color:var(--ink-soft)}
+  .costrow .lft .e{font-size:15px}
+  .costrow .amt{font-weight:700;font-variant-numeric:tabular-nums}
+  .costrow.hidden-cost{color:var(--gold)}
+  .costrow.hidden-cost .lft{color:var(--gold)}
+  .costrow.total{background:var(--indigo);color:var(--indigo-ink)}
+  .costrow.total .lft{color:var(--indigo-ink)}
+  .costrow.total .amt{font-size:16px}
+  .costnote{font-size:11.5px;color:var(--gold);margin:9px 2px 0;display:flex;gap:6px}
+
+  .shoplist{display:grid;gap:9px}
+  .shopitem{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  .shopitem .e{font-size:20px;margin-top:1px}
+  .shopitem b{font-size:13.5px}
+  .shopitem .gi{font-size:9.5px;font-weight:800;letter-spacing:.05em;color:var(--accent-ink);
+    background:var(--accent-wash);padding:1px 5px;border-radius:4px;margin-left:6px;vertical-align:middle}
+  .shopitem p{margin:3px 0 0;font-size:12px;color:var(--ink-soft)}
+  .shopitem .where{margin-top:4px;font-size:11px;color:var(--ink-faint)}
+
+  .bargain{display:flex;gap:11px;align-items:center;background:var(--gold-wash);border-radius:12px;padding:12px 14px;margin-top:12px}
+  .bargain .e{font-size:22px}
+  .bargain b{font-size:13px;color:var(--gold)}
+  .bargain p{margin:2px 0 0;font-size:12px;color:var(--ink-soft)}
+
+  .replan{display:flex;gap:8px;align-items:flex-end;margin-top:2px}
+  .replan .ctrl{flex:1}
+  .replan input[type=time]{font:inherit;font-size:14px;margin-top:6px;width:100%;border:1px solid var(--line);
+    border-radius:9px;padding:7px 9px;background:var(--paper);color:var(--ink)}
+  .replan button{font:inherit;font-size:13px;font-weight:700;color:#fff;background:var(--indigo);
+    border:0;border-radius:10px;padding:11px 14px;cursor:pointer;white-space:nowrap}
+  .changes{margin-top:11px;font-size:12px}
+  .changes .ci{display:flex;gap:7px;padding:6px 0;border-top:1px dashed var(--line);color:var(--ink-soft)}
+  .changes .ci:first-child{border-top:0}
+
+  .nav{display:flex;background:var(--surface);border-top:1px solid var(--line);
+    padding:9px 6px calc(9px + env(safe-area-inset-bottom));z-index:5}
+  .navb{flex:1;background:none;border:0;cursor:pointer;font:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-faint);padding:3px 0}
+  .navb .ico{font-size:20px;line-height:1;filter:grayscale(1);opacity:.6;transition:.15s}
+  .navb .lb{font-size:10.5px;font-weight:600}
+  .navb.on{color:var(--accent)}
+  .navb.on .ico{filter:none;opacity:1}
+
+  .cta{display:block;width:100%;font:inherit;font-size:14px;font-weight:700;color:#fff;background:var(--accent);
+    border:0;border-radius:13px;padding:14px;cursor:pointer;margin-top:6px;box-shadow:var(--shadow)}
+  .cta.ghost{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent)}
+  .cta:hover{filter:brightness(1.05)}
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="rail">
+    <div class="brandline">
+      <div class="mark">P</div>
+      <div><b>PlanMyTrip</b> &nbsp;<span>travel intelligence, not a booking desk</span></div>
+    </div>
+    <h1>Book last. <em>Decide well</em> first.</h1>
+    <p class="lede">This screen is wired to the PlanMyTrip API. Intent chips, itineraries,
+      wellness and the living trip doc all come from the running backend — with a graceful
+      fallback to demo data when the server isn't reachable.</p>
+    <div class="srcbadge" id="srcBadge"><span class="dot"></span><span id="srcText">checking API…</span></div>
+
+    <div class="qlabel">What the booking apps leave out</div>
+    <div class="gap">
+      <div class="gap-row"><div class="k">🧭</div><div class="t"><b>Purpose-based discovery</b><span>Pick an intent — recharge, spiritual, adventure — get destinations ranked to it</span></div></div>
+      <div class="gap-row"><div class="k">🗓️</div><div class="t"><b>Season intelligence</b><span>Weather, crowds, festivals & the shoulder-season sweet spot — not just price</span></div></div>
+      <div class="gap-row"><div class="k">🧘</div><div class="t"><b>Wellness & retreats, first-class</b><span>Ayurveda, yoga, silent retreats — judged by credentials, not star ratings</span></div></div>
+      <div class="gap-row"><div class="k">🧾</div><div class="t"><b>All-in cost & living trip doc</b><span>The hidden lines, plus a plan that re-plans when your flight slips</span></div></div>
+    </div>
+    <p class="foot">On the Trip tab, change the flight arrival time and tap <b>Re-plan</b> — the
+      backend rebuilds Day 1 and tells you exactly what got dropped.</p>
+    <button class="themebtn" id="themeToggle">◐ Toggle light / dark</button>
+  </div>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="glass">
+        <div class="statusbar"><span>9:41</span><span class="dots"><span>▂▄▆</span> <span>雷</span></span></div>
+
+        <div class="screenport" id="port">
+          <!-- DISCOVER -->
+          <section class="screen on" id="s-discover">
+            <div class="apphead">
+              <div class="ey">Discover</div>
+              <h2>How do you want to feel?</h2>
+              <p>6 nights · from Bengaluru · mid-October</p>
+            </div>
+            <div class="qlabel">Travel intent</div>
+            <div class="chips" id="intentChips">
+              <button class="chip sel" data-intent="recharge"><span class="e">🌿</span>Recharge</button>
+              <button class="chip" data-intent="spiritual"><span class="e">🕉️</span>Spiritual</button>
+              <button class="chip" data-intent="adventure"><span class="e">🏔️</span>Adventure</button>
+              <button class="chip" data-intent="wellness"><span class="e">🧘</span>Wellness</button>
+              <button class="chip" data-intent="shopping"><span class="e">🛍️</span>Shopping</button>
+              <button class="chip" data-intent="detox"><span class="e">📴</span>Digital detox</button>
+              <button class="chip" data-intent="foodie"><span class="e">🍛</span>Foodie</button>
+            </div>
+            <div class="controls">
+              <div class="ctrl">
+                <div class="l">Budget / person</div>
+                <div class="v" id="budgetVal">₹45,000</div>
+                <input type="range" id="budget" min="15000" max="120000" step="5000" value="45000">
+              </div>
+              <div class="ctrl">
+                <div class="l">Trip length</div>
+                <div class="v">6 nights</div>
+                <input type="range" min="2" max="14" value="6" aria-label="days">
+              </div>
+            </div>
+            <div class="reslabel"><b id="resTitle">Ranked for Recharge</b><span id="resCount"></span></div>
+            <div id="results"><div class="loading">Loading…</div></div>
+          </section>
+
+          <!-- PLAN -->
+          <section class="screen" id="s-plan">
+            <div class="apphead">
+              <div class="ey" id="planEy">Plan</div>
+              <h2 id="planTitle">Your day-by-day canvas</h2>
+              <p>Paced for energy · travel time & opening hours</p>
+            </div>
+            <div class="daytabs" id="dayTabs"></div>
+            <div id="planDays"><div class="loading">Loading…</div></div>
+          </section>
+
+          <!-- WELLNESS -->
+          <section class="screen" id="s-wellness">
+            <div class="apphead">
+              <div class="ey">Retreats & wellness</div>
+              <h2>Judged on credentials</h2>
+              <p>Tradition, accreditation & programme — not review stars</p>
+            </div>
+            <div id="wellnessList"><div class="loading">Loading…</div></div>
+          </section>
+
+          <!-- TRIP -->
+          <section class="screen" id="s-trip">
+            <div class="apphead">
+              <div class="ey" id="tripEy">Your living trip</div>
+              <h2>Everything, in one place</h2>
+              <p>Works offline · re-plans when a flight slips</p>
+            </div>
+            <div id="tripBody"><div class="loading">Loading…</div></div>
+          </section>
+        </div>
+
+        <nav class="nav" id="nav">
+          <button class="navb on" data-screen="discover"><span class="ico">🧭</span><span class="lb">Discover</span></button>
+          <button class="navb" data-screen="plan"><span class="ico">🗺️</span><span class="lb">Plan</span></button>
+          <button class="navb" data-screen="wellness"><span class="ico">🧘</span><span class="lb">Wellness</span></button>
+          <button class="navb" data-screen="trip"><span class="ico">🧳</span><span class="lb">Trip</span></button>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ config / api ============
+const API_BASE = location.protocol.startsWith("http") ? "" : "http://127.0.0.1:8000";
+const CUR_MONTH = 10;               // narrative: mid-October
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+let LIVE = false;
+const JH = {"Content-Type":"application/json"};
+
+async function api(path, opts){
+  const r = await fetch(API_BASE + path, opts);
+  if(!r.ok) throw new Error(path + " → " + r.status);
+  return r.json();
+}
+function setLive(v){
+  LIVE = v;
+  const b = document.getElementById("srcBadge");
+  b.classList.toggle("live", v);
+  document.getElementById("srcText").textContent = v ? "live API — data from the backend" : "demo data — API not reachable";
+}
+
+// ============ gradients + fallback demo data ============
+const G = {
+  backwater:"linear-gradient(135deg,#0f5f4e,#2a8f6a 60%,#6fae5c)",
+  hills:"linear-gradient(135deg,#1d5e46,#3f8f5f 55%,#8bb26a)",
+  mountain:"linear-gradient(135deg,#2b3a63,#4a6ea0 60%,#a9c3d9)",
+  desert:"linear-gradient(135deg,#8a5a1e,#c98a1e 55%,#e6c579)",
+  ghats:"linear-gradient(135deg,#274d3b,#4f8a5c 60%,#9ec27a)",
+  ganga:"linear-gradient(135deg,#334a7a,#5f77b0 55%,#d8bfa0)",
+  coast:"linear-gradient(135deg,#116b7a,#22a0a8 55%,#7fd0c2)",
+  snow:"linear-gradient(135deg,#3a4d78,#6f8bbf 60%,#cfd8e6)"
+};
+const INTENT_LABEL = {recharge:"Recharge",spiritual:"Spiritual",adventure:"Adventure",wellness:"Wellness",shopping:"Shopping",detox:"Digital detox",foodie:"Foodie"};
+const DEST = [
+  {slug:"rishikesh",name:"Rishikesh",state:"Uttarakhand",g:"ganga",fit:{spiritual:97,detox:92,wellness:90,recharge:78},tags:["Yoga capital","Ganga aarti","Silent ashrams"],cost:"₹34k",best:"Oct–Nov",season:[1,1,2,2,0,0,0,0,2,2,2,1]},
+  {slug:"kerala-hills",name:"Munnar & Backwaters",state:"Kerala",g:"backwater",fit:{recharge:96,wellness:88,foodie:80,detox:74},tags:["Tea hills","Houseboats","Ayurveda"],cost:"₹42k",best:"Oct–Mar",season:[2,2,0,0,0,0,0,1,2,2,2,2]},
+  {slug:"coorg",name:"Coorg",state:"Karnataka",g:"ghats",fit:{recharge:91,wellness:76,foodie:78,detox:80},tags:["Coffee estates","Waterfalls","Slow"],cost:"₹28k",best:"Oct–Mar",season:[2,2,1,0,0,0,0,1,2,2,2,2]},
+  {slug:"ladakh",name:"Ladakh",state:"Ladakh",g:"mountain",fit:{adventure:98,detox:88,spiritual:72,recharge:60},tags:["High passes","Monasteries","Stark"],cost:"₹58k",best:"Jun–Sep",season:[0,0,0,1,2,2,2,2,1,0,0,0]},
+  {slug:"spiti",name:"Spiti Valley",state:"Himachal",g:"snow",fit:{adventure:95,detox:96,spiritual:80,recharge:58},tags:["Cold desert","Off-grid","Villages"],cost:"₹46k",best:"May–Sep",season:[0,0,0,1,2,2,2,2,2,1,0,0]},
+  {slug:"jaipur",name:"Jaipur",state:"Rajasthan",g:"desert",fit:{shopping:96,foodie:82,adventure:55,recharge:50},tags:["Bazaars","Forts","Block prints"],cost:"₹30k",best:"Oct–Mar",season:[2,1,0,0,0,0,0,0,1,2,2,2]},
+  {slug:"varanasi",name:"Varanasi",state:"Uttar Pradesh",g:"ganga",fit:{spiritual:99,foodie:74,shopping:70,recharge:45},tags:["Ghats","Aarti","Banarasi silk"],cost:"₹26k",best:"Nov–Feb",season:[2,1,0,0,0,0,0,0,1,2,2,2]},
+  {slug:"goa-south",name:"Goa (South)",state:"Goa",g:"coast",fit:{recharge:88,foodie:90,shopping:64,detox:62},tags:["Quiet beaches","Cafés","Susegad"],cost:"₹36k",best:"Nov–Feb",season:[2,2,1,0,0,0,0,0,1,2,2,1]}
+];
+const WELL = [
+  {name:"Ananda in the Himalayas",loc:"Narendra Nagar, near Rishikesh",g:"ganga",creds:[["✓","Palace estate","verify"],["Ayurveda + Yoga",""],["Panchakarma physician",""]],prog:"7-night detox / Ayurveda",price:"₹1.4L / wk"},
+  {name:"Kairali Ayur. Village",loc:"Palakkad, Kerala",g:"backwater",creds:[["✓","NABH-accredited","verify"],["Panchakarma",""],["Vaidya-led",""]],prog:"14-night Panchakarma",price:"₹95k / wk"},
+  {name:"Vana",loc:"Dehradun",g:"ghats",creds:[["✓","Integrative","verify"],["Sowa-Rigpa",""],["TCM + Ayurveda",""]],prog:"Sadhana journey",price:"₹1.2L / wk"},
+  {name:"Shreyas Retreat",loc:"Bengaluru outskirts",g:"hills",creds:[["✓","Silent option","verify"],["Hatha yoga",""],["Small groups",""]],prog:"Silent yoga immersion",price:"₹70k / wk"}
+];
+const MOCK_ITIN = {destination:"Jaipur (demo)", days:[
+  {day:1,intensity_points:6,active_minutes:360,stops:[
+    {kind:"visit",start:"08:30",end:"11:00",title:"Amber Fort",detail:"morning · Fort · Go early to beat heat"},
+    {kind:"rest",start:"11:00",end:"11:30",title:"Rest",detail:"Recovery after a high-intensity stop"},
+    {kind:"travel",start:"11:30",end:"11:50",title:"Travel to City Palace",detail:"~20 min"},
+    {kind:"visit",start:"11:50",end:"13:50",title:"City Palace",detail:"Palace museum"},
+    {kind:"meal",start:"13:58",end:"14:43",title:"Lunch",detail:"Paced in, not skipped"},
+    {kind:"visit",start:"14:43",end:"16:13",title:"Johari Bazaar",detail:"evening · Shopping · haggle"}]},
+  {day:2,intensity_points:5,active_minutes:315,stops:[
+    {kind:"visit",start:"09:00",end:"09:45",title:"Hawa Mahal",detail:"morning · Landmark"},
+    {kind:"visit",start:"09:53",end:"10:53",title:"Jantar Mantar",detail:"Heritage observatory"},
+    {kind:"visit",start:"17:00",end:"19:00",title:"Chokhi Dhani",detail:"evening · Cultural village"}]}
+]};
+const MOCK_DOC = {trip_id:null,title:"Kerala reset",season:{month:"Oct",verdict:"excellent",suitability:82,best_windows:["Oct–Nov","Jan–Feb"],sweet_spot:["Oct","Nov"],in_sweet_spot:true,caveats:["Some showers possible (190mm avg)."]},
+  cost:{lines:[{label:"Flights (return)",amount_inr:9000,hidden:false},{label:"Stays · 5 nights",amount_inr:17500,hidden:false},{label:"Local transport & transfers",amount_inr:6000,hidden:true},{label:"Entries, activities & permits",amount_inr:1500,hidden:true},{label:"Data (eSIM) & tips",amount_inr:900,hidden:true},{label:"Food (estimate)",amount_inr:5400,hidden:false}],total_inr:40300,hidden_total_inr:8400,party_size:2,trip_total_inr:80600},
+  shopping:{bargaining_norm:"Kerala haggles gently — emporiums are fixed, markets ~15–20% off.",items:[
+    {name:"Munnar tea & cardamom",category:"spice",gi_tagged:true,where_to_buy:"Estate spice markets",authenticity_note:"GI-tagged; buy at source."},
+    {name:"Aranmula Kannadi mirror",category:"craft",gi_tagged:true,where_to_buy:"Aranmula co-op",authenticity_note:"Kerala-only craft; insist on cert."},
+    {name:"Kasavu handloom",category:"textile",gi_tagged:false,where_to_buy:"Kannur weaver co-ops",authenticity_note:"Co-ops over tourist shops."}]}};
+
+// ============ helpers ============
+function stripFromSuit(suit){ // suit: 12 numbers 0-100
+  return suit.map((s,i)=>`<i class="${s>=70?'good':s>=45?'ok':''} ${i===CUR_MONTH-1?'now':''}"></i>`).join("");
+}
+function stripFromMock(arr){
+  return arr.map((s,i)=>`<i class="${s===2?'good':s===1?'ok':''} ${i===CUR_MONTH-1?'now':''}"></i>`).join("");
+}
+function bestWindow(suit){
+  const gs=new Set(); for(let m=0;m<12;m++) if(suit[m]>=70) gs.add(m);
+  if(gs.size===0) return ""; if(gs.size===12) return "Year-round";
+  let start=[...gs].find(m=>!gs.has((m+11)%12));
+  const order=[]; for(let i=0;i<12;i++) order.push((start+i)%12);
+  const runs=[]; let run=[];
+  for(const m of order){ if(gs.has(m)) run.push(m); else if(run.length){runs.push(run);run=[];} }
+  if(run.length) runs.push(run);
+  const r=runs.sort((a,b)=>b.length-a.length)[0];
+  return r.length===1?MONTHS[r[0]]:`${MONTHS[r[0]]}–${MONTHS[r[r.length-1]]}`;
+}
+function cardHtml(c){
+  return `<div class="dcard">
+    <div class="dhero" style="background:${G[c.g]||G.hills}">
+      <div class="fit"><b>${c.fit}</b><i>FIT</i></div>
+      ${c.best?`<div class="badge">🗓️ ${c.best}</div>`:""}
+      <h3>${c.name}</h3><span class="sub">${c.state}</span>
+    </div>
+    <div class="dbody">
+      <div class="taglist">${(c.tags||[]).map(t=>`<span class="tg">${t}</span>`).join("")}</div>
+      <div class="dmeta"><span>from <span class="mv">${c.cost}</span></span></div>
+      ${c.strip?`<div class="season-strip">${c.strip}</div><div class="season-key"><span>best time to visit →</span><span>▲ you</span></div>`:""}
+      ${c.why?`<div class="why">${c.why}</div>`:""}
+    </div></div>`;
+}
+
+// ============ discover ============
+let curIntent="recharge", curBudget=45000;
+async function renderDest(){
+  const box=document.getElementById("results");
+  document.getElementById("resTitle").textContent="Ranked for "+INTENT_LABEL[curIntent];
+  if(LIVE){
+    try{
+      const data=await api(`/discover?intent=${curIntent}&month=${CUR_MONTH}&budget_inr=${curBudget}&limit=5`);
+      document.getElementById("resCount").textContent=data.count+" within budget";
+      const cards=await Promise.all(data.results.map(async r=>{
+        let strip="", best="";
+        try{
+          const d=await api(`/destinations/${r.slug}`);
+          const suit=d.seasons.sort((a,b)=>a.month-b.month).map(s=>s.suitability);
+          strip=stripFromSuit(suit); best=bestWindow(suit);
+        }catch(e){}
+        return {name:r.name,state:r.state,g:r.hero_gradient,fit:Math.round(r.composite),
+                tags:r.tags,cost:"₹"+Math.round(r.base_cost_inr/1000)+"k",best,strip,why:r.why};
+      }));
+      box.innerHTML=cards.map(cardHtml).join("") || `<div class="loading">No matches in budget.</div>`;
+      return;
+    }catch(e){ setLive(false); }
+  }
+  const ranked=DEST.map(d=>({d,score:d.fit[curIntent]||30})).filter(x=>x.score>=55).sort((a,b)=>b.score-a.score).slice(0,5);
+  document.getElementById("resCount").textContent=ranked.length+" within budget";
+  box.innerHTML=ranked.map(({d,score})=>cardHtml({name:d.name,state:d.state,g:d.g,fit:score,tags:d.tags,cost:d.cost,best:d.best,strip:stripFromMock(d.season)})).join("");
+}
+
+// ============ plan ============
+let planSlug="jaipur";
+function dayTimeline(d){
+  const rows=d.stops.map(s=>{
+    if(s.kind==="travel") return `<div class="ev move"><div class="mv">🚗 ${s.title}${s.detail?` · ${s.detail}`:""}</div></div>`;
+    const cls=(s.kind==="rest"||s.kind==="meal")?"rest":"";
+    const pill=s.kind==="meal"?`<span class="pill shop">Break</span>`:(s.kind==="rest"?`<span class="pill well">Pacing</span>`:"");
+    return `<div class="ev ${cls}"><div class="time">${s.start}</div><div class="card"><b>${s.title}</b>${s.detail?`<p>${s.detail}</p>`:""}${pill}</div></div>`;
+  }).join("");
+  return `<div class="tl">${rows}</div>`;
+}
+function renderPlan(plan){
+  document.getElementById("planEy").textContent="Plan · "+(plan.destination||"Trip");
+  document.getElementById("planTitle").textContent=`Your ${plan.days.length}-day canvas`;
+  document.getElementById("dayTabs").innerHTML=plan.days.map((d,i)=>
+    `<button class="daytab ${i===0?'sel':''}" data-day="${d.day}">Day ${d.day}<small>${d.intensity_points} pts</small></button>`).join("");
+  document.getElementById("planDays").innerHTML=plan.days.map((d,i)=>
+    `<div class="dayview ${i===0?'on':''}" data-day="${d.day}">${dayTimeline(d)}</div>`).join("");
+}
+async function loadPlan(){
+  let plan=null;
+  if(LIVE){ try{ plan=await api(`/destinations/${planSlug}/itinerary?days=2`); }catch(e){ setLive(false); } }
+  renderPlan(plan||MOCK_ITIN);
+}
+
+// ============ wellness ============
+function wcardHtml(w){
+  return `<div class="wcard"><div class="top" style="background:${G[w.g]||G.hills}"><h3>${w.name}</h3><span class="loc">${w.loc}</span></div>
+    <div class="wb"><div class="creds">${w.creds}</div><div class="row"><span>${w.prog}</span><b>${w.price}</b></div></div></div>`;
+}
+async function loadWellness(){
+  const box=document.getElementById("wellnessList");
+  if(LIVE){
+    try{
+      const list=await api("/wellness");
+      box.innerHTML=list.map((w,i)=>{
+        const g=["ganga","backwater","ghats","hills","coast"][i%5];
+        const badge=w.accredited?"Accredited":(w.physician_led?"Physician-led":"Verified");
+        const creds=[`<span class="cred verify">✓ ${badge}</span>`,`<span class="cred">${w.tradition}</span>`,
+          w.silent_option?`<span class="cred">Silent option</span>`:""].filter(Boolean).join("");
+        return wcardHtml({name:w.name,loc:w.location,g,creds,prog:w.program,price:"₹"+Math.round(w.price_inr_week/1000)+"k / wk"});
+      }).join("");
+      return;
+    }catch(e){ setLive(false); }
+  }
+  box.innerHTML=WELL.map(w=>wcardHtml({name:w.name,loc:w.loc,g:w.g,
+    creds:w.creds.map(c=>`<span class="cred ${c[2]||''}">${c[0]==='✓'?'✓ '+c[1]:c[0]}</span>`).join(""),prog:w.prog,price:w.price})).join("");
+}
+
+// ============ trip (living doc + replan) ============
+let apiKey=localStorage.getItem("pmt_key"), tripId=null, tripSlug="kerala-hills";
+const costIcon=(l)=>/flight/i.test(l)?"✈️":/stay/i.test(l)?"🏨":/transport|transfer/i.test(l)?"🚗":/entr|activit|permit/i.test(l)?"🎟️":/data|tip/i.test(l)?"📶":/food/i.test(l)?"🍛":"•";
+function inr(n){ return "₹"+Number(n).toLocaleString("en-IN"); }
+
+function renderTrip(doc, changes){
+  const s=doc.season, c=doc.cost;
+  const seasonBlock = s ? `<div class="block">
+      <div class="bh"><span class="e">🗓️</span><b>Season intelligence</b>${s.in_sweet_spot?`<span class="tag">Sweet spot</span>`:""}</div>
+      <p class="d"><b>${s.month}</b> is <b>${s.verdict}</b> here (${s.suitability}/100). Best windows: ${(s.best_windows||[]).join(" · ")||"—"}. Shoulder-season sweet spots: ${(s.sweet_spot||[]).join(", ")||"—"}.</p>
+      ${(s.caveats||[]).map(cv=>`<div class="costnote">⚠️ ${cv}</div>`).join("")}
+    </div>` : "";
+  const costRows=(c.lines||[]).map(l=>`<div class="costrow ${l.hidden?'hidden-cost':''}"><span class="lft"><span class="e">${costIcon(l.label)}</span>${l.label}</span><span class="amt">${inr(l.amount_inr)}</span></div>`).join("");
+  const costBlock=`<div class="block">
+      <div class="bh"><span class="e">🧾</span><b>All-in cost / person</b><span class="tag">Nothing hidden</span></div>
+      <div class="costtable" style="margin-top:10px">${costRows}
+        <div class="costrow total"><span class="lft"><span class="e">∑</span>Realistic total</span><span class="amt">${inr(c.total_inr)}</span></div>
+      </div>
+      <div class="costnote">The <b>amber rows</b> are what MMT/EMT never show at checkout — here they're ${inr(c.hidden_total_inr)}.${c.party_size>1?` Party of ${c.party_size}: <b>${inr(c.trip_total_inr)}</b>.`:""}</div>
+    </div>`;
+  const sh=doc.shopping||{items:[]};
+  const shopBlock=`<div class="block">
+      <div class="bh"><span class="e">🛍️</span><b>What this place is known for</b></div>
+      <div class="shoplist" style="margin-top:11px">${(sh.items||[]).map(i=>
+        `<div class="shopitem"><span class="e">${i.gi_tagged?"🏅":"🛍️"}</span><div><b>${i.name}${i.gi_tagged?`<span class="gi">GI TAG</span>`:""}</b><p>${i.authenticity_note||""}</p><div class="where">📍 ${i.where_to_buy||""}</div></div></div>`).join("")}
+      </div>
+      ${sh.bargaining_norm?`<div class="bargain"><span class="e">💬</span><div><b>Bargaining norm</b><p>${sh.bargaining_norm}</p></div></div>`:""}
+    </div>`;
+  const replanBlock=`<div class="block">
+      <div class="bh"><span class="e">✈️</span><b>Flight changed?</b><span class="tag">Re-plan</span></div>
+      <p class="d">Move your arrival time and rebuild Day 1 around it.</p>
+      <div class="replan">
+        <div class="ctrl"><div class="l">New arrival</div><input type="time" id="arrTime" value="09:00"></div>
+        <button id="replanBtn">Re-plan</button>
+      </div>
+      <div class="changes" id="changes">${changes?changes.map(x=>`<div class="ci">↻ ${x}</div>`).join(""):""}</div>
+    </div>`;
+  document.getElementById("tripEy").textContent="Your living trip · "+(doc.title||"");
+  document.getElementById("tripBody").innerHTML=seasonBlock+costBlock+shopBlock+replanBlock;
+  const btn=document.getElementById("replanBtn"); if(btn) btn.addEventListener("click",doReplan);
+}
+async function ensureUser(){
+  if(apiKey) return;
+  const u=await api("/users",{method:"POST",headers:JH,body:JSON.stringify({email:"demo+"+Date.now()+"@planmytrip.app"})});
+  apiKey=u.api_key; localStorage.setItem("pmt_key",apiKey);
+}
+async function loadTrip(){
+  if(LIVE){
+    try{
+      await ensureUser();
+      const doc=await api("/trips",{method:"POST",headers:{...JH,"X-API-Key":apiKey},
+        body:JSON.stringify({destination_slug:tripSlug,title:"Kerala reset",month:CUR_MONTH,nights:5,party_size:2,flight_arrival:"2026-10-12T09:00:00"})});
+      tripId=doc.trip_id;
+      renderTrip(doc, doc.itinerary&&doc.itinerary.changes);
+      return;
+    }catch(e){ setLive(false); }
+  }
+  renderTrip(MOCK_DOC);
+}
+async function doReplan(){
+  const t=document.getElementById("arrTime").value||"09:00";
+  if(LIVE && tripId){
+    try{
+      const doc=await api(`/trips/${tripId}/replan`,{method:"POST",headers:{...JH,"X-API-Key":apiKey},
+        body:JSON.stringify({flight_arrival:"2026-10-12T"+t+":00"})});
+      renderTrip(doc, (doc.itinerary&&doc.itinerary.changes)||["No changes — arrival still fits."]);
+      return;
+    }catch(e){ setLive(false); }
+  }
+  const box=document.getElementById("changes");
+  if(box) box.innerHTML=`<div class="ci">↻ Re-plan needs the live API — start the backend to see Day 1 rebuild.</div>`;
+}
+
+// ============ nav / interactions ============
+document.getElementById("intentChips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  document.querySelectorAll("#intentChips .chip").forEach(c=>c.classList.remove("sel"));
+  b.classList.add("sel"); curIntent=b.dataset.intent; renderDest();
+});
+document.getElementById("budget").addEventListener("input",e=>{
+  curBudget=+e.target.value; document.getElementById("budgetVal").textContent="₹"+curBudget.toLocaleString("en-IN");
+});
+document.getElementById("budget").addEventListener("change",renderDest);
+document.getElementById("dayTabs").addEventListener("click",e=>{
+  const b=e.target.closest(".daytab"); if(!b) return;
+  document.querySelectorAll(".daytab").forEach(t=>t.classList.remove("sel")); b.classList.add("sel");
+  document.querySelectorAll("#planDays .dayview").forEach(v=>v.classList.toggle("on",v.dataset.day===b.dataset.day));
+});
+const loaded={plan:false,wellness:false,trip:false};
+document.getElementById("nav").addEventListener("click",e=>{
+  const b=e.target.closest(".navb"); if(!b) return;
+  document.querySelectorAll(".navb").forEach(n=>n.classList.remove("on")); b.classList.add("on");
+  const scr=b.dataset.screen;
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  document.getElementById("s-"+scr).classList.add("on");
+  document.getElementById("port").scrollTop=0;
+  if(scr==="plan" && !loaded.plan){ loaded.plan=true; loadPlan(); }
+  if(scr==="wellness" && !loaded.wellness){ loaded.wellness=true; loadWellness(); }
+  if(scr==="trip" && !loaded.trip){ loaded.trip=true; loadTrip(); }
+});
+document.getElementById("themeToggle").addEventListener("click",()=>{
+  const r=document.documentElement, cur=r.getAttribute("data-theme");
+  const dark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  r.setAttribute("data-theme",dark?"light":"dark");
+});
+
+// ============ boot ============
+(async function(){
+  try{ await api("/health"); setLive(true); }catch(e){ setLive(false); }
+  renderDest();
+})();
+</script>

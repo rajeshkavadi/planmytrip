@@ -51,10 +51,10 @@ python -m app.refresh
 
 REM --- 6. Launch ---
 echo.
-echo  [OK] Starting PlanMyTrip at http://localhost:8000/docs
+echo  [OK] Starting PlanMyTrip at http://localhost:8000/  (API docs at /docs)
 echo       (Close this window or press Ctrl+C to stop.)
 echo.
-start "" "http://localhost:8000/docs"
+start "" "http://localhost:8000/"
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 pause

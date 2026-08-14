@@ -5,12 +5,15 @@ need to transact. **PlanMyTrip starts from how you want to *feel*** and answers
 the harder questions the booking apps skip: *where, when, and why* — then books
 last. India-first.
 
-This repo is the backend. A clickable UI prototype lives at `design/prototype.html`.
+This repo is the backend **and** a mobile UI wired to it. Open `/` on the running
+server for the live app (`app/web/index.html`); `design/prototype.html` is the
+original standalone mock (demo data, no server needed).
 
 > **Runs with zero setup.** The default database is a local SQLite file, so
 > `python -m app.seed && uvicorn app.main:app` just works — no Postgres, no
-> Docker. Point `DATABASE_URL` at Postgres to switch on PostGIS. Windows users
-> can double-click `install-windows.bat`.
+> Docker. Then open <http://localhost:8000/>. Windows users can double-click
+> `install-windows.bat` to run it, or `build-exe.bat` to produce a standalone
+> `PlanMyTrip.exe`. Point `DATABASE_URL` at Postgres to switch on PostGIS.
 
 ## What the incumbents don't give you
 
@@ -70,12 +73,20 @@ uvicorn app.main:app --reload
 # Docs: http://localhost:8000/docs
 ```
 
-### Windows (double-click)
+### Windows
 
-Run **`install-windows.bat`** (or `install-windows.ps1`). It checks for Python,
-creates the venv, installs, seeds SQLite, refreshes weather, and opens the docs.
-Only prerequisite: [Python 3.11+](https://www.python.org/downloads/) with "Add
-to PATH" ticked.
+- **Run it:** double-click **`install-windows.bat`** (or `install-windows.ps1`).
+  It checks for Python, creates the venv, installs, seeds SQLite, refreshes
+  weather, and opens the app.
+- **Build a standalone `.exe`:** double-click **`build-exe.bat`**. It runs
+  PyInstaller (per `PlanMyTrip.spec`, entrypoint `desktop.py`) and produces
+  `dist\PlanMyTrip.exe` — a single self-contained executable that bundles the
+  UI, seeds a SQLite DB under `%LOCALAPPDATA%\PlanMyTrip`, and opens the browser.
+  A real Windows `.exe` must be built on Windows; PyInstaller isn't a
+  cross-compiler.
+
+Only prerequisite either way: [Python 3.11+](https://www.python.org/downloads/)
+with "Add to PATH" ticked.
 
 ### Postgres + PostGIS (production shape)
 
