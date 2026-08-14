@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from . import __version__
-from .routers import destinations, discover, trips, wellness
+from .routers import destinations, discover, trips, users, wellness
 
 app = FastAPI(
     title="PlanMyTrip API",
@@ -15,6 +15,7 @@ app = FastAPI(
 app.include_router(discover.router)
 app.include_router(destinations.router)
 app.include_router(wellness.router)
+app.include_router(users.router)
 app.include_router(trips.router)
 
 

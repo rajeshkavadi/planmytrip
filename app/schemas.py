@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from .domain import Crowd, Intent
@@ -100,3 +102,39 @@ class DestinationDetail(DestinationCard):
     intent_fits: dict[str, int]
     shopping: list[ShoppingItemOut]
     retreats: list[RetreatOut]
+
+
+# ---- users & saved trips ----
+class UserCreate(BaseModel):
+    email: str
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    api_key: str  # returned once on creation; the client stores it
+
+
+class SavedTripCreate(BaseModel):
+    destination_slug: str
+    title: str = ""
+    intent: Intent | None = None
+    month: int | None = None
+    nights: int = 3
+    party_size: int = 1
+    budget_inr: int | None = None
+    flight_arrival: datetime | None = None
+
+
+class SavedTripSummary(BaseModel):
+    id: int
+    destination_slug: str
+    title: str
+    nights: int
+    party_size: int
+    status: str
+    updated_at: datetime
+
+
+class ReplanRequest(BaseModel):
+    flight_arrival: datetime  # new arrival after a schedule change

@@ -6,13 +6,12 @@ scraped listings are what the incumbents already have.
 """
 from __future__ import annotations
 
-from geoalchemy2.elements import WKTElement
-
 from .database import SessionLocal, init_db
 from .domain import Crowd, Intent
 from .models import (
     Destination,
     IntentFit,
+    Place,
     SeasonMonth,
     ShoppingItem,
     WellnessRetreat,
@@ -201,6 +200,37 @@ DESTINATIONS = [
     ),
 ]
 
+# Schedulable activities for the itinerary builder.
+# (name, category, lat, lon, visit_min, open_h, close_h, intensity, time_of_day,
+#  weather_sensitive, priority, note)
+PLACES = {
+    "jaipur": [
+        ("Amber Fort", "Fort", 26.9855, 75.8513, 150, 8, 17, "high", "morning", True, 92,
+         "Go early to beat heat and crowds"),
+        ("City Palace", "Palace museum", 26.9258, 75.8237, 120, 9, 17, "medium", "any", False, 85, ""),
+        ("Hawa Mahal", "Landmark", 26.9239, 75.8267, 45, 9, 16, "low", "morning", True, 80,
+         "Best light early morning"),
+        ("Jantar Mantar", "Heritage observatory", 26.9247, 75.8246, 60, 9, 16, "low", "any", True, 72, ""),
+        ("Nahargarh Fort", "Sunset viewpoint", 26.9371, 75.8153, 90, 10, 17, "medium", "evening", True, 78,
+         "Sunset over the city"),
+        ("Johari Bazaar", "Shopping", 26.9187, 75.8267, 90, 11, 20, "low", "evening", False, 82,
+         "Jewellery & block prints — haggle"),
+        ("Chokhi Dhani", "Cultural village", 26.7590, 75.8440, 120, 17, 23, "medium", "evening", False, 66,
+         "Rajasthani dinner & folk arts"),
+    ],
+    "kerala-hills": [
+        ("Kolukkumalai Sunrise", "Sunrise jeep", 10.1500, 77.2200, 120, 5, 9, "high", "sunrise", False, 90,
+         "World's highest tea estate — clouds by 9am"),
+        ("Eravikulam National Park", "Wildlife", 10.1760, 77.0530, 120, 8, 16, "medium", "morning", True, 84, ""),
+        ("Tea Museum", "Museum", 10.0990, 77.0550, 60, 9, 16, "low", "any", False, 70, ""),
+        ("Ayurvedic massage", "Wellness", 10.0890, 77.0590, 60, 10, 19, "low", "afternoon", False, 76,
+         "Abhyanga — woven in mid-trip"),
+        ("Mattupetty Dam", "Scenic", 10.1080, 77.1260, 45, 9, 17, "low", "afternoon", True, 60, ""),
+        ("Munnar Spice Market", "Shopping", 10.0890, 77.0620, 45, 10, 20, "low", "evening", False, 64,
+         "Cardamom & tea at source prices"),
+    ],
+}
+
 RETREATS = [
     dict(name="Ananda in the Himalayas", location="Narendra Nagar, near Rishikesh",
          dest="rishikesh", tradition="Ayurveda + Yoga", program="7-night detox / Ayurveda",
@@ -227,6 +257,7 @@ def seed() -> None:
     try:
         # Idempotent reset for a clean dev seed.
         db.query(WellnessRetreat).delete()
+        db.query(Place).delete()
         db.query(ShoppingItem).delete()
         db.query(SeasonMonth).delete()
         db.query(IntentFit).delete()
@@ -241,13 +272,19 @@ def seed() -> None:
                 base_cost_inr=d["base_cost_inr"], tags=d["tags"],
                 bargaining_norm=d["bargaining_norm"],
                 latitude=d["lat"], longitude=d["lon"],
-                geom=WKTElement(f"POINT({d['lon']} {d['lat']})", srid=4326),
             )
             dest.intent_fits = [IntentFit(intent=i.value, score=s) for i, s in d["fits"].items()]
             dest.seasons = d["seasons"]
             dest.shopping = [
                 ShoppingItem(name=n, category=c, gi_tagged=gi, where_to_buy=w, authenticity_note=a)
                 for (n, c, gi, w, a) in d["shopping"]
+            ]
+            dest.places = [
+                Place(name=nm, category=cat, latitude=la, longitude=lo, visit_minutes=vm,
+                      open_hour=oh, close_hour=ch, intensity=inten, time_of_day=tod,
+                      weather_sensitive=ws, priority=pr, note=nt)
+                for (nm, cat, la, lo, vm, oh, ch, inten, tod, ws, pr, nt)
+                in PLACES.get(d["slug"], [])
             ]
             db.add(dest)
             by_slug[d["slug"]] = dest

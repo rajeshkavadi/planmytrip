@@ -6,8 +6,9 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
-from ..adapters import to_scoring_input
+from ..adapters import to_place_input, to_scoring_input
 from ..database import get_db
+from ..itinerary import build_itinerary
 from ..models import Destination
 from ..schemas import (
     DestinationCard,
@@ -31,6 +32,7 @@ def _load(db: Session, slug: str) -> Destination:
             selectinload(Destination.seasons),
             selectinload(Destination.shopping),
             selectinload(Destination.retreats),
+            selectinload(Destination.places),
         )
         .filter(Destination.slug == slug)
         .first()
@@ -102,6 +104,26 @@ def get_season(
     d = _load(db, slug)
     month = month or date.today().month
     return SeasonReport(**season_report(to_scoring_input(d), month))
+
+
+@router.get("/{slug}/itinerary")
+def get_itinerary(
+    slug: str,
+    days: int = Query(default=2, ge=1, le=14),
+    db: Session = Depends(get_db),
+):
+    """A paced, day-by-day plan built from this destination's activities.
+
+    Respects opening hours, real travel time between stops, and a daily energy
+    budget with rests, a lunch break and a midday-heat gap.
+    """
+    d = _load(db, slug)
+    places = [to_place_input(p) for p in d.places]
+    if not places:
+        raise HTTPException(404, f"No activities seeded for '{slug}' yet.")
+    plan = build_itinerary(places, days=days)
+    plan["destination"] = d.name
+    return plan
 
 
 @router.get("/{slug}/shopping", response_model=ShoppingGuide)

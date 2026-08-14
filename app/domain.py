@@ -24,6 +24,27 @@ class Intent(str, Enum):
     FOODIE = "foodie"
 
 
+class Intensity(str, Enum):
+    """How much energy an activity costs — the input to pacing."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+INTENSITY_POINTS: dict["Intensity", int] = {}  # filled below
+
+
+class TimeOfDay(str, Enum):
+    """When an activity is best done — drives ordering within a day."""
+
+    SUNRISE = "sunrise"
+    MORNING = "morning"
+    ANY = "any"
+    AFTERNOON = "afternoon"
+    EVENING = "evening"
+
+
 class Crowd(str, Enum):
     """Crowd density for a destination in a given month."""
 
@@ -42,6 +63,21 @@ CROWD_PENALTY: dict[Crowd, float] = {
     Crowd.MODERATE: 6.0,
     Crowd.HIGH: 14.0,
     Crowd.PEAK: 22.0,
+}
+
+INTENSITY_POINTS.update({
+    Intensity.LOW: 1,
+    Intensity.MEDIUM: 2,
+    Intensity.HIGH: 3,
+})
+
+# Preferred ordering of activities across a day.
+TIME_OF_DAY_ORDER: dict[TimeOfDay, int] = {
+    TimeOfDay.SUNRISE: 0,
+    TimeOfDay.MORNING: 1,
+    TimeOfDay.ANY: 2,
+    TimeOfDay.AFTERNOON: 3,
+    TimeOfDay.EVENING: 4,
 }
 
 MONTH_ABBR = [

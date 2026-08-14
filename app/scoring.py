@@ -58,6 +58,18 @@ class ScoredDestination:
 # --------------------------------------------------------------------------- #
 # Season intelligence
 # --------------------------------------------------------------------------- #
+def comfort_score(avg_temp_c: float, rainfall_mm: float) -> int:
+    """Map raw climate (temperature + rain) to a 0–100 weather desirability.
+
+    Used to derive `weather_score` from live climate data so season
+    intelligence stays fresh. Peaks around 22°C and dry; falls off with heat,
+    cold and rain. Crowd/festival knowledge stays curated on top of this.
+    """
+    temp_comfort = 100 - abs(avg_temp_c - 22) * 3.5
+    rain_penalty = min(45.0, rainfall_mm / 8.0)
+    return int(max(5, min(98, round(temp_comfort - rain_penalty))))
+
+
 def season_suitability(s: MonthSeason) -> float:
     """A month's real desirability = weather minus the cost of crowds."""
     return max(0.0, s.weather_score - CROWD_PENALTY[s.crowd])

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from geoalchemy2 import Geography
+from datetime import datetime, timezone
+
 from sqlalchemy import (
     Boolean,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -15,6 +17,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 from .domain import Crowd, Intent
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class Destination(Base):
@@ -33,10 +39,9 @@ class Destination(Base):
     bargaining_norm: Mapped[str] = mapped_column(Text, default="")
     latitude: Mapped[float] = mapped_column(Float)
     longitude: Mapped[float] = mapped_column(Float)
-    # PostGIS geography for "wellness retreats within 50km", clustering, routing.
-    geom: Mapped[object] = mapped_column(
-        Geography(geometry_type="POINT", srid=4326), nullable=True
-    )
+    # A PostGIS `geom geography(Point,4326)` column is added at the DB level in
+    # database.init_db() when running on Postgres (for "retreats within 50km",
+    # clustering, routing). lat/lon above stay the portable source of truth.
 
     intent_fits: Mapped[list["IntentFit"]] = relationship(
         back_populates="destination", cascade="all, delete-orphan"
@@ -49,6 +54,9 @@ class Destination(Base):
     )
     retreats: Mapped[list["WellnessRetreat"]] = relationship(
         back_populates="destination"
+    )
+    places: Mapped[list["Place"]] = relationship(
+        back_populates="destination", cascade="all, delete-orphan"
     )
 
 
@@ -110,6 +118,76 @@ class WellnessRetreat(Base):
     credentials: Mapped[list] = mapped_column(JSON, default=list)
 
     destination: Mapped[Destination | None] = relationship(back_populates="retreats")
+
+
+class Place(Base):
+    """A schedulable activity/attraction — the raw material for itineraries."""
+
+    __tablename__ = "places"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    destination_id: Mapped[int] = mapped_column(
+        ForeignKey("destinations.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(160))
+    category: Mapped[str] = mapped_column(String(80))
+    latitude: Mapped[float] = mapped_column(Float)
+    longitude: Mapped[float] = mapped_column(Float)
+    visit_minutes: Mapped[int] = mapped_column(Integer, default=90)
+    open_hour: Mapped[int] = mapped_column(Integer, default=0)   # 24h
+    close_hour: Mapped[int] = mapped_column(Integer, default=24)
+    intensity: Mapped[str] = mapped_column(String(10), default="medium")
+    time_of_day: Mapped[str] = mapped_column(String(12), default="any")
+    weather_sensitive: Mapped[bool] = mapped_column(Boolean, default=False)
+    priority: Mapped[int] = mapped_column(Integer, default=50)
+    note: Mapped[str] = mapped_column(Text, default="")
+
+    destination: Mapped[Destination] = relationship(back_populates="places")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    api_key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    trips: Mapped[list["SavedTrip"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class SavedTrip(Base):
+    """A saved plan and its living trip document.
+
+    `itinerary` and `snapshot` hold a self-contained JSON payload the client
+    caches for offline use; `replan` regenerates them when a flight moves.
+    """
+
+    __tablename__ = "saved_trips"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    destination_slug: Mapped[str] = mapped_column(String(80), index=True)
+    title: Mapped[str] = mapped_column(String(160), default="")
+    intent: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    month: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    nights: Mapped[int] = mapped_column(Integer, default=3)
+    party_size: Mapped[int] = mapped_column(Integer, default=1)
+    budget_inr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    flight_arrival: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    itinerary: Mapped[dict] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(20), default="planned")
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    user: Mapped[User] = relationship(back_populates="trips")
 
 
 class ShoppingItem(Base):
