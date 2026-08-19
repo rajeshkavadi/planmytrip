@@ -1,0 +1,4 @@
+# Postgres/PostGIS driver — only needed when DATABASE_URL points at Postgres.
+# The default SQLite setup (and the Windows .exe) does NOT need this.
+#   pip install -r requirements.txt -r requirements-postgres.txt
+psycopg[binary]>=3.2
