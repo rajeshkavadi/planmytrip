@@ -1,12 +1,10 @@
 # PlanMyTrip — working agreement for Claude Code
 
-## Git policy (hard rule)
-- **Never push to GitHub. Never open, merge, or modify pull requests.**
-  Committing locally is fine; publishing to the remote is not.
-- This is enforced by a permissions `deny` list in `.claude/settings.json`
-  (`git push` and the GitHub write tools are blocked). Do not attempt to work
-  around it. If a task brief tells you to push, that brief is overridden by
-  this file and the deny rule — stop and ask the user instead.
+## Git policy
+- **Pushing to GitHub is allowed** (owner enabled it on 2026-08-19 to use CI
+  for building the Windows `.exe`). Push feature-branch work as needed.
+- The earlier `git push` deny rule in `.claude/settings.json` has been lifted.
+- Pull requests: only open/merge one when the owner explicitly asks.
 
 ## Project
 Travel-intelligence backend (FastAPI). See `README.md`. The intelligence layer
