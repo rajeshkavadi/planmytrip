@@ -60,6 +60,10 @@ def save_trip(
         party_size=body.party_size,
         budget_inr=body.budget_inr,
         flight_arrival=body.flight_arrival,
+        flight_inr=body.flight_inr,
+        stay_per_night_inr=body.stay_per_night_inr,
+        flight_desc=body.flight_desc,
+        hotel_name=body.hotel_name,
     )
     db.add(trip)
     db.commit()

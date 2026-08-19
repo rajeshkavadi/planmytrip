@@ -54,11 +54,11 @@ def build_trip_doc(db: Session, trip: SavedTrip) -> dict:
     if trip.month:
         season = season_report(to_scoring_input(dest), trip.month)
 
-    # All-in cost (per person), scaled to party size for the trip total.
+    # All-in cost (per person), using the chosen flight/hotel when present.
     cost = estimate_trip_cost(
         nights=trip.nights,
-        flight_inr=DEFAULT_FLIGHT_INR,
-        stay_per_night_inr=DEFAULT_STAY_PER_NIGHT_INR,
+        flight_inr=trip.flight_inr or DEFAULT_FLIGHT_INR,
+        stay_per_night_inr=trip.stay_per_night_inr or DEFAULT_STAY_PER_NIGHT_INR,
     ).as_dict()
     cost["party_size"] = trip.party_size
     cost["trip_total_inr"] = cost["total_inr"] * trip.party_size
@@ -76,6 +76,7 @@ def build_trip_doc(db: Session, trip: SavedTrip) -> dict:
         "nights": trip.nights,
         "party_size": trip.party_size,
         "flight_arrival": trip.flight_arrival.isoformat() if trip.flight_arrival else None,
+        "booking": {"flight": trip.flight_desc or None, "hotel": trip.hotel_name or None},
         "season": season,
         "cost": cost,
         "itinerary": plan,

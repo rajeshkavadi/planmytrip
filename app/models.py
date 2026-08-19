@@ -181,6 +181,12 @@ class SavedTrip(Base):
     flight_arrival: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Chosen booking options (from the Plan screen). Nullable so the cost
+    # engine falls back to defaults when nothing is selected yet.
+    flight_inr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    stay_per_night_inr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    flight_desc: Mapped[str] = mapped_column(String(120), default="")
+    hotel_name: Mapped[str] = mapped_column(String(160), default="")
     itinerary: Mapped[dict] = mapped_column(JSON, default=dict)
     status: Mapped[str] = mapped_column(String(20), default="planned")
     updated_at: Mapped[datetime] = mapped_column(

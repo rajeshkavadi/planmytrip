@@ -51,3 +51,25 @@ def init_db() -> None:
                 "SET geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography "
                 "WHERE geom IS NULL"
             ))
+
+    # Best-effort forward migration for columns added after a DB already exists
+    # (the .exe keeps its SQLite file across upgrades). Additive and idempotent.
+    _ensure_columns("saved_trips", {
+        "flight_inr": "INTEGER",
+        "stay_per_night_inr": "INTEGER",
+        "flight_desc": "VARCHAR(120)",
+        "hotel_name": "VARCHAR(160)",
+    })
+
+
+def _ensure_columns(table: str, columns: dict[str, str]) -> None:
+    """Add any missing columns to an existing table. Additive only."""
+    with engine.begin() as conn:
+        if settings.is_postgres:
+            for name, sqltype in columns.items():
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {name} {sqltype}"))
+        else:
+            existing = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            for name, sqltype in columns.items():
+                if name not in existing:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {sqltype}"))

@@ -124,6 +124,10 @@ class SavedTripCreate(BaseModel):
     party_size: int = 1
     budget_inr: int | None = None
     flight_arrival: datetime | None = None
+    flight_inr: int | None = None
+    stay_per_night_inr: int | None = None
+    flight_desc: str = ""
+    hotel_name: str = ""
 
 
 class SavedTripSummary(BaseModel):
