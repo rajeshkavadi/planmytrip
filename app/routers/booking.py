@@ -1,13 +1,13 @@
 """Flight & hotel options for a destination.
 
-Uses real data from Amadeus when credentials are configured
-(settings.amadeus_enabled); otherwise returns generated sample options. Either
-way the response includes a `source` field ("live" or "sample") so the UI can
-label it honestly.
+Uses real data from RapidAPI's Sky-Scrapper when a key is configured
+(settings.booking_live_enabled); otherwise returns generated sample options.
+Either way the response includes a `source` field ("live" or "sample") so the
+UI can label it honestly, plus a `note` when a live lookup fell back.
 """
 from __future__ import annotations
 
-from datetime import date as date_cls, timedelta
+from datetime import date as date_cls, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -40,13 +40,12 @@ def get_flights(
     d = _dest(db, slug)
     dep_date = date or (date_cls.today() + timedelta(days=21)).isoformat()
 
-    if settings.amadeus_enabled and d.iata:
+    if settings.booking_live_enabled and d.iata:
         try:
             opts = get_client().flight_offers(origin.upper(), d.iata, dep_date, adults)
             return {"destination": d.name, "origin": origin.upper(), "date": dep_date,
                     "source": "live", "options": [f.as_dict() for f in opts]}
         except ProviderError as e:
-            # Fall back to sample options so the screen still works.
             fallback_note = str(e)
     else:
         fallback_note = None
@@ -58,12 +57,24 @@ def get_flights(
 
 
 @router.get("/{slug}/hotels")
-def get_hotels(slug: str, db: Session = Depends(get_db)):
+def get_hotels(
+    slug: str,
+    checkin: str | None = Query(default=None, description="Check-in date YYYY-MM-DD."),
+    nights: int = Query(default=3, ge=1, le=60),
+    adults: int = Query(default=2, ge=1, le=9),
+    db: Session = Depends(get_db),
+):
     d = _dest(db, slug)
+    ci = checkin or (date_cls.today() + timedelta(days=21)).isoformat()
+    try:
+        co = (datetime.strptime(ci, "%Y-%m-%d") + timedelta(days=nights)).strftime("%Y-%m-%d")
+    except ValueError:
+        ci = (date_cls.today() + timedelta(days=21)).isoformat()
+        co = (date_cls.today() + timedelta(days=21 + nights)).isoformat()
 
-    if settings.amadeus_enabled and d.iata:
+    if settings.booking_live_enabled and d.iata:
         try:
-            opts = get_client().hotel_options(d.iata, d.base_cost_inr)
+            opts = get_client().hotel_offers(d.name, ci, co, adults, nights, d.base_cost_inr)
             return {"destination": d.name, "source": "live",
                     "options": [h.as_dict() for h in opts]}
         except ProviderError as e:

@@ -162,31 +162,29 @@ from Open-Meteo (free, no key) and recomputes each month's temperature, rainfall
 and `weather_score`. Crowd levels and festivals stay curated. If the feed is
 unreachable, curated data is left untouched.
 
-## Real flight & hotel data (Amadeus)
+## Real flight & hotel data (RapidAPI Sky-Scrapper)
 
-Flights and hotels come from **Amadeus Self-Service** when credentials are set,
-and from generated sample options otherwise (the UI labels which — "live prices"
-vs "sample options"). There is no legitimate key-less flight/hotel feed, so real
-data needs free keys:
+Flights and hotels come from **RapidAPI's Sky-Scrapper** when a key is set, and
+from generated sample options otherwise (the UI labels which — "live prices" vs
+"sample options"). One key covers both. Amadeus's free self-service portal was
+decommissioned in 2026, so this is the current free path:
 
-1. Sign up at <https://developers.amadeus.com> and create an app to get an
-   **API Key** and **API Secret** (the free "test" tier is enough).
-2. Provide them one of these ways:
-   - **Running from source / Docker:** set `AMADEUS_CLIENT_ID`,
-     `AMADEUS_CLIENT_SECRET` in `.env` (see `.env.example`).
-   - **The Windows .exe:** create a file
-     `%LOCALAPPDATA%\PlanMyTrip\planmytrip.env` with:
+1. Sign up at <https://rapidapi.com>, open
+   <https://rapidapi.com/apiheya/api/sky-scrapper>, and **Subscribe** to the
+   **Basic (Free)** plan. Copy your **X-RapidAPI-Key** from the endpoint page.
+2. Provide it one of these ways:
+   - **From source / Docker:** set `RAPIDAPI_KEY` in `.env` (see `.env.example`).
+   - **The Windows .exe:** create `%LOCALAPPDATA%\PlanMyTrip\planmytrip.env` with:
      ```
-     AMADEUS_CLIENT_ID=your_key
-     AMADEUS_CLIENT_SECRET=your_secret
+     RAPIDAPI_KEY=your_key_here
      ```
      then restart the app.
-3. Restart. Flights/hotels now show real data; any API hiccup falls back to
-   sample options so the screen never breaks.
+3. Restart. Flights/hotels show real data; any API hiccup or rate-limit falls
+   back to sample options so the screen never breaks.
 
-Note: the free test tier serves cached/limited inventory (great for a demo, not
-every route). Switch `AMADEUS_BASE_URL` to `https://api.amadeus.com` with
-production keys for full coverage.
+Note: the free plan is **rate-limited** (a small number of calls/month). Each
+flight search resolves airport IDs then searches, so it uses a few calls; IDs
+are cached in-process to economise. For heavy use, upgrade the plan on RapidAPI.
 
 ## Status & next steps
 

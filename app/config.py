@@ -13,20 +13,19 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./planmytrip.db"
     app_env: str = "development"
 
-    # Amadeus Self-Service API — real flight & hotel data. Free keys at
-    # https://developers.amadeus.com. Leave blank to use generated sample
-    # options. Base URL: test.api.amadeus.com (free tier) or api.amadeus.com.
-    amadeus_client_id: str = ""
-    amadeus_client_secret: str = ""
-    amadeus_base_url: str = "https://test.api.amadeus.com"
+    # Real flight & hotel data via RapidAPI's Sky-Scrapper API (one key covers
+    # both). Get a free key at https://rapidapi.com/apiheya/api/sky-scrapper
+    # and subscribe to the Basic (free) plan. Leave blank to use sample options.
+    rapidapi_key: str = ""
+    rapidapi_host: str = "sky-scrapper.p.rapidapi.com"
 
     @property
     def is_postgres(self) -> bool:
         return self.database_url.startswith("postgresql")
 
     @property
-    def amadeus_enabled(self) -> bool:
-        return bool(self.amadeus_client_id and self.amadeus_client_secret)
+    def booking_live_enabled(self) -> bool:
+        return bool(self.rapidapi_key)
 
 
 settings = Settings()

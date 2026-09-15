@@ -44,8 +44,9 @@ def _load_env_file(path: Path) -> None:
         pass
 
 
-# Load optional credentials (e.g. AMADEUS_CLIENT_ID) from a file next to the DB,
-# then point the app at a stable, writable DB — both before importing settings.
+# Load optional credentials (e.g. RAPIDAPI_KEY for live flights/hotels) from a
+# file next to the DB, then point the app at a stable, writable DB — both
+# before importing settings.
 _load_env_file(_data_dir() / "planmytrip.env")
 os.environ.setdefault("DATABASE_URL", f"sqlite:///{(_data_dir() / 'planmytrip.db').as_posix()}")
 

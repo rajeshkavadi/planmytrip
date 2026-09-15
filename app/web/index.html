@@ -488,7 +488,7 @@ async function loadBooking(){
   if(LIVE){ try{
       const sd=document.getElementById("startDate").value||START_DEFAULT;
       const fr=await api(`/destinations/${selected.slug}/flights?origin=${origin}&date=${sd}&adults=${pax}`);
-      const hr=await api(`/destinations/${selected.slug}/hotels`);
+      const hr=await api(`/destinations/${selected.slug}/hotels?checkin=${sd}&nights=${nights}&adults=${pax}`);
       flights=fr.options; hotels=hr.options; fsrc=fr.source; hsrc=hr.source;
   }catch(e){ setLive(false); } }
   const tag=s=>s==="live"?`<span style="color:var(--accent)">● live prices</span>`:`● sample options`;
