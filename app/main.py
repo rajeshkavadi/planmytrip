@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from . import __version__
-from .routers import booking, destinations, discover, trips, users, wellness
+from .routers import booking, destinations, diag, discover, trips, users, wellness
 
 app = FastAPI(
     title="PlanMyTrip API",
@@ -32,6 +32,7 @@ app.include_router(booking.router)
 app.include_router(wellness.router)
 app.include_router(users.router)
 app.include_router(trips.router)
+app.include_router(diag.router)
 
 WEB_DIR = Path(__file__).parent / "web"
 

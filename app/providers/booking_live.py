@@ -72,16 +72,21 @@ class SkyScrapperClient:
         return eid
 
     # -- flights ----------------------------------------------------------- #
-    def flight_offers(self, origin_iata: str, dest_iata: str, date: str,
-                      adults: int = 1, max_results: int = 6) -> list[FlightOption]:
+    def raw_flights(self, origin_iata: str, dest_iata: str, date: str,
+                    adults: int = 1, max_results: int = 6) -> dict:
+        """The raw searchFlights response (used by flight_offers and /diag)."""
         o_sky, o_ent = self._airport_ids(origin_iata)
         d_sky, d_ent = self._airport_ids(dest_iata)
-        data = self._get("/api/v2/flights/searchFlights", {
+        return self._get("/api/v2/flights/searchFlights", {
             "originSkyId": o_sky, "destinationSkyId": d_sky,
             "originEntityId": o_ent, "destinationEntityId": d_ent,
             "date": date, "adults": max(1, adults), "currency": "INR",
             "sortBy": "best", "limit": max_results,
         })
+
+    def flight_offers(self, origin_iata: str, dest_iata: str, date: str,
+                      adults: int = 1, max_results: int = 6) -> list[FlightOption]:
+        data = self.raw_flights(origin_iata, dest_iata, date, adults, max_results)
         itineraries = (data.get("data", {}) or {}).get("itineraries", []) or []
         out: list[FlightOption] = []
         for i, it in enumerate(itineraries[:max_results]):
@@ -108,14 +113,19 @@ class SkyScrapperClient:
         return out
 
     # -- hotels ------------------------------------------------------------ #
-    def hotel_offers(self, dest_query: str, checkin: str, checkout: str,
-                     adults: int, nights: int, base_cost_inr: int,
-                     limit: int = 5) -> list[HotelOption]:
+    def raw_hotels(self, dest_query: str, checkin: str, checkout: str,
+                   adults: int, limit: int = 5) -> dict:
+        """The raw searchHotels response (used by hotel_offers and /diag)."""
         entity = self._hotel_entity(dest_query)
-        data = self._get("/api/v1/hotels/searchHotels", {
+        return self._get("/api/v1/hotels/searchHotels", {
             "entityId": entity, "checkinDate": checkin, "checkoutDate": checkout,
             "adults": max(1, adults), "currency": "INR", "sortOrder": "5", "limit": limit,
         })
+
+    def hotel_offers(self, dest_query: str, checkin: str, checkout: str,
+                     adults: int, nights: int, base_cost_inr: int,
+                     limit: int = 5) -> list[HotelOption]:
+        data = self.raw_hotels(dest_query, checkin, checkout, adults, limit)
         hotels = (data.get("data", {}) or {}).get("hotels", []) or []
         est_night = max(1500, round(base_cost_inr * 0.09))
         nights = max(1, nights)

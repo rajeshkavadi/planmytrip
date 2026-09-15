@@ -322,6 +322,7 @@
               <div id="flightList" class="optlist"><div class="loading">Loading flights…</div></div>
               <div class="qlabel">Choose a stay <span class="muted" id="hotelSrc"></span></div>
               <div id="hotelList" class="optlist"><div class="loading">Loading stays…</div></div>
+              <div id="bookNote" style="font-size:11.5px;color:var(--gold);margin:8px 2px 0"></div>
               <button class="cta" id="buildBtn">Build my day-by-day plan</button>
               <div id="itin"></div>
               <button class="cta ghost" id="saveTripBtn" style="display:none">Save &amp; view trip →</button>
@@ -484,16 +485,18 @@ async function loadBooking(){
   const fl=document.getElementById("flightList"), hl=document.getElementById("hotelList");
   const origin=(document.getElementById("origin")||{}).value||"BLR";
   document.getElementById("flightFrom").textContent=origin+" → "+selected.name;
-  let flights=MOCK_FLIGHTS, hotels=MOCK_HOTELS, fsrc="sample", hsrc="sample";
+  let flights=MOCK_FLIGHTS, hotels=MOCK_HOTELS, fsrc="sample", hsrc="sample", note="";
   if(LIVE){ try{
       const sd=document.getElementById("startDate").value||START_DEFAULT;
       const fr=await api(`/destinations/${selected.slug}/flights?origin=${origin}&date=${sd}&adults=${pax}`);
       const hr=await api(`/destinations/${selected.slug}/hotels?checkin=${sd}&nights=${nights}&adults=${pax}`);
-      flights=fr.options; hotels=hr.options; fsrc=fr.source; hsrc=hr.source;
+      flights=fr.options; hotels=hr.options; fsrc=fr.source; hsrc=hr.source; note=fr.note||hr.note||"";
   }catch(e){ setLive(false); } }
   const tag=s=>s==="live"?`<span style="color:var(--accent)">● live prices</span>`:`● sample options`;
   document.getElementById("flightFrom").innerHTML=origin+" → "+selected.name+" · "+tag(fsrc);
   document.getElementById("hotelSrc").innerHTML=tag(hsrc);
+  const nb=document.getElementById("bookNote");
+  if(nb) nb.textContent = (fsrc==="sample" && note) ? ("Live data unavailable: "+note) : "";
   fl.innerHTML=flights.map(flightOptHtml).join("");
   hl.innerHTML=hotels.map(hotelOptHtml).join("");
 }
