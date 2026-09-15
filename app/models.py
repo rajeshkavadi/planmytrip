@@ -39,6 +39,8 @@ class Destination(Base):
     bargaining_norm: Mapped[str] = mapped_column(Text, default="")
     latitude: Mapped[float] = mapped_column(Float)
     longitude: Mapped[float] = mapped_column(Float)
+    # Nearest airport / city IATA code, for real flight & hotel lookups.
+    iata: Mapped[str] = mapped_column(String(4), default="")
     # A PostGIS `geom geography(Point,4326)` column is added at the DB level in
     # database.init_db() when running on Postgres (for "retreats within 50km",
     # clustering, routing). lat/lon above stay the portable source of truth.

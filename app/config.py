@@ -13,9 +13,20 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./planmytrip.db"
     app_env: str = "development"
 
+    # Amadeus Self-Service API — real flight & hotel data. Free keys at
+    # https://developers.amadeus.com. Leave blank to use generated sample
+    # options. Base URL: test.api.amadeus.com (free tier) or api.amadeus.com.
+    amadeus_client_id: str = ""
+    amadeus_client_secret: str = ""
+    amadeus_base_url: str = "https://test.api.amadeus.com"
+
     @property
     def is_postgres(self) -> bool:
         return self.database_url.startswith("postgresql")
+
+    @property
+    def amadeus_enabled(self) -> bool:
+        return bool(self.amadeus_client_id and self.amadeus_client_secret)
 
 
 settings = Settings()

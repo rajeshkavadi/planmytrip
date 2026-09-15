@@ -54,6 +54,7 @@ def init_db() -> None:
 
     # Best-effort forward migration for columns added after a DB already exists
     # (the .exe keeps its SQLite file across upgrades). Additive and idempotent.
+    _ensure_columns("destinations", {"iata": "VARCHAR(4)"})
     _ensure_columns("saved_trips", {
         "flight_inr": "INTEGER",
         "stay_per_night_inr": "INTEGER",

@@ -26,8 +26,27 @@ def _data_dir() -> Path:
     return d
 
 
-# Point the app at a stable, writable DB *before* importing anything that reads
-# settings — unless the user has overridden DATABASE_URL themselves.
+def _load_env_file(path: Path) -> None:
+    """Load simple KEY=VALUE lines into the environment (without overriding
+    anything already set). Lets .exe users drop API keys in a file instead of
+    setting Windows environment variables. Blank lines and #comments ignored.
+    """
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+    except FileNotFoundError:
+        pass
+    except OSError:
+        pass
+
+
+# Load optional credentials (e.g. AMADEUS_CLIENT_ID) from a file next to the DB,
+# then point the app at a stable, writable DB — both before importing settings.
+_load_env_file(_data_dir() / "planmytrip.env")
 os.environ.setdefault("DATABASE_URL", f"sqlite:///{(_data_dir() / 'planmytrip.db').as_posix()}")
 
 

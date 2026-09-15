@@ -38,7 +38,7 @@ def _months(rows):
 DESTINATIONS = [
     dict(
         slug="rishikesh", name="Rishikesh", state="Uttarakhand", region="himalayas",
-        hero_gradient="ganga", base_cost_inr=34000, lat=30.087, lon=78.267,
+        hero_gradient="ganga", base_cost_inr=34000, lat=30.087, lon=78.267, iata="DED",
         summary="Yoga capital on the Ganga — ashrams, aarti, and white water.",
         tags=["Yoga capital", "Ganga aarti", "Silent ashrams"],
         bargaining_norm="Ashram stores and cafés are fixed-price. Rafting/adventure "
@@ -59,7 +59,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="kerala-hills", name="Munnar & Backwaters", state="Kerala", region="south",
-        hero_gradient="backwater", base_cost_inr=42000, lat=10.089, lon=77.059,
+        hero_gradient="backwater", base_cost_inr=42000, lat=10.089, lon=77.059, iata="COK",
         summary="Tea-carpeted hills flowing down to houseboat backwaters.",
         tags=["Tea hills", "Houseboats", "Ayurveda"],
         bargaining_norm="Kerala haggles gently — emporiums are fixed, markets ~15–20% off.",
@@ -81,7 +81,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="coorg", name="Coorg", state="Karnataka", region="south",
-        hero_gradient="ghats", base_cost_inr=28000, lat=12.421, lon=75.739,
+        hero_gradient="ghats", base_cost_inr=28000, lat=12.421, lon=75.739, iata="IXE",
         summary="Coffee estates, waterfalls and a deliberately slow pace.",
         tags=["Coffee estates", "Waterfalls", "Slow"],
         bargaining_norm="Estate stores fixed-price; spice markets ~15% off.",
@@ -101,7 +101,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="ladakh", name="Ladakh", state="Ladakh", region="himalayas",
-        hero_gradient="mountain", base_cost_inr=58000, lat=34.152, lon=77.577,
+        hero_gradient="mountain", base_cost_inr=58000, lat=34.152, lon=77.577, iata="IXL",
         summary="High-desert passes, cobalt lakes and Buddhist monasteries.",
         tags=["High passes", "Monasteries", "Stark beauty"],
         bargaining_norm="Leh market fixed-ish; pashmina and curios negotiate ~20–30%.",
@@ -121,7 +121,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="spiti", name="Spiti Valley", state="Himachal Pradesh", region="himalayas",
-        hero_gradient="snow", base_cost_inr=46000, lat=32.246, lon=78.017,
+        hero_gradient="snow", base_cost_inr=46000, lat=32.246, lon=78.017, iata="KUU",
         summary="A cold desert of a thousand-year-old villages, gloriously off-grid.",
         tags=["Cold desert", "Off-grid", "Ancient villages"],
         bargaining_norm="Barely commercial — village co-ops, fixed & fair. Don't haggle hard.",
@@ -139,7 +139,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="jaipur", name="Jaipur", state="Rajasthan", region="north",
-        hero_gradient="desert", base_cost_inr=30000, lat=26.912, lon=75.787,
+        hero_gradient="desert", base_cost_inr=30000, lat=26.912, lon=75.787, iata="JAI",
         summary="Pink City of forts, bazaars and India's densest craft shopping.",
         tags=["Bazaars", "Forts", "Block prints"],
         bargaining_norm="North India haggles hard — bazaars quote 2–3x; settle ~40–50% off. "
@@ -162,7 +162,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="varanasi", name="Varanasi", state="Uttar Pradesh", region="north",
-        hero_gradient="ganga", base_cost_inr=26000, lat=25.317, lon=83.010,
+        hero_gradient="ganga", base_cost_inr=26000, lat=25.317, lon=83.010, iata="VNS",
         summary="The eternal city — ghats, aarti, and Banarasi silk.",
         tags=["Ghats", "Ganga aarti", "Banarasi silk"],
         bargaining_norm="Silk shops quote high; genuine Banarasi is dear — cheap 'silk' is polyester.",
@@ -180,7 +180,7 @@ DESTINATIONS = [
     ),
     dict(
         slug="goa-south", name="Goa (South)", state="Goa", region="west",
-        hero_gradient="coast", base_cost_inr=36000, lat=15.011, lon=74.021,
+        hero_gradient="coast", base_cost_inr=36000, lat=15.011, lon=74.021, iata="GOI",
         summary="The quiet half of Goa — palm beaches, cafés and susegad.",
         tags=["Quiet beaches", "Cafés", "Susegad"],
         bargaining_norm="Beach-shack and flea-market goods negotiate ~30–40%.",
@@ -271,7 +271,7 @@ def seed() -> None:
                 summary=d["summary"], hero_gradient=d["hero_gradient"],
                 base_cost_inr=d["base_cost_inr"], tags=d["tags"],
                 bargaining_norm=d["bargaining_norm"],
-                latitude=d["lat"], longitude=d["lon"],
+                latitude=d["lat"], longitude=d["lon"], iata=d.get("iata", ""),
             )
             dest.intent_fits = [IntentFit(intent=i.value, score=s) for i, s in d["fits"].items()]
             dest.seasons = d["seasons"]
