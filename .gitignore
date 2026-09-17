@@ -10,3 +10,11 @@ env/
 .DS_Store
 *.db
 *.sqlite3
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.keystore
