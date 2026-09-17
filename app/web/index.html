@@ -210,7 +210,15 @@
   .cta:not(:disabled):hover{filter:brightness(1.05)}
   :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  /* launch splash */
+  .splash{position:fixed;inset:0;z-index:200;background:var(--accent);display:grid;place-items:center;text-align:center;color:#fff;transition:opacity .45s ease}
+  .splash.hide{opacity:0;pointer-events:none}
+  .splash .mk2{width:78px;height:78px;border-radius:20px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-family:var(--serif);font-weight:600;font-size:46px;margin:0 auto 16px}
+  .splash h1{font-family:var(--serif);font-weight:600;font-size:30px;margin:0;letter-spacing:-.01em}
+  .splash p{margin:7px 0 0;font-size:13px;opacity:.85;letter-spacing:.02em}
 </style>
+
+<div class="splash" id="splash"><div><div class="mk2">P</div><h1>PlanMyTrip</h1><p>travel intelligence, not a booking desk</p></div></div>
 
 <header class="appbar">
   <div class="brand"><span class="mk">P</span> PlanMyTrip</div>
@@ -562,4 +570,5 @@ wireOptList("flightList"); wireOptList("hotelList");
 document.getElementById("startDate").value=START_DEFAULT; recomputeFinish();
 document.getElementById("tab-plan").disabled=true;
 (async function(){ try{ await api("/health"); setLive(true); }catch(e){ setLive(false); } renderDest(); loadCatalog(); })();
+setTimeout(function(){ var s=document.getElementById("splash"); if(s) s.classList.add("hide"); }, 900);
 </script>

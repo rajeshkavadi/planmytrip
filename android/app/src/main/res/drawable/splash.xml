@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cold-start splash: brand-green window with the P mark centred, shown for
+     the moment before the WebView paints. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/brand" />
+    <item
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:width="220dp"
+        android:height="220dp"
+        android:gravity="center" />
+</layer-list>
